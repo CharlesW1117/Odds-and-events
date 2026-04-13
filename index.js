@@ -3,6 +3,30 @@ let bank = [];
 let odds = [];
 let evens = [];
 
+const style = document.createElement("style");
+style.textContent = `
+  .box-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    border: 2px solid #ccc;
+    padding: 10px;
+    min-height: 40px;
+    margin-bottom: 12px;
+    background-color: #fafafa;
+  }
+
+  .box {
+    border: 2px solid #333;
+    border-radius: 4px;
+    padding: 6px 12px;
+    background-color: white;
+    font-weight: bold;
+    text-align: center;
+    min-width: 40px;
+  }
+`;
+document.head.appendChild(style);
 
 function addNumber(n) {
   bank.push(n);
@@ -30,24 +54,34 @@ function sortAll() {
 function NumberForm() {
   const $form = document.createElement("form");
   $form.innerHTML = `
-    <label>
-      Enter a number:
-      <input name="num" type="number" />
-    </label>
-    <button>Add number</button>
+    <label>Enter numbers (comma-separated):</label>
+    <input name="num" type="text" />
+    <button>Add number(s)</button>
     <button type="button" id="sortOneBtn">Sort 1</button>
     <button type="button" id="sortAllBtn">Sort All</button>
   `;
 
-
   $form.addEventListener("submit", (event) => {
     event.preventDefault();
     const data = new FormData($form);
-    const n = Number(data.get("num"));
-    if (!isNaN(n)) addNumber(n);
+    const raw = data.get("num").trim();
+
+    // ✅ Do nothing if input is empty
+    if (raw === "") return;
+
+    const numbers = raw
+      .split(",")
+      .map(n => Number(n.trim()))
+      .filter(n => !isNaN(n));
+
+    if (numbers.length > 0) {
+      bank.push(...numbers);
+      render();
+    }
+
+    $form.reset();
   });
 
-  // click events for sorting
   $form.querySelector("#sortOneBtn").addEventListener("click", sortOne);
   $form.querySelector("#sortAllBtn").addEventListener("click", sortAll);
 
@@ -55,19 +89,22 @@ function NumberForm() {
 }
 
 function NumberList(title, arr) {
-  const $section = document.createElement("section");
-  const $h2 = document.createElement("h2");
-  $h2.textContent = title;
+  const section = document.createElement("section");
+  const h2 = document.createElement("h2");
+  h2.textContent = title;
 
-  const $list = document.createElement("ul");
+  const container = document.createElement("div");
+  container.classList.add("box-container");
+
   arr.forEach(num => {
-    const $li = document.createElement("li");
-    $li.textContent = num;
-    $list.appendChild($li);
+    const box = document.createElement("div");
+    box.classList.add("box");
+    box.textContent = num;
+    container.appendChild(box);
   });
 
-  $section.append($h2, $list);
-  return $section;
+  section.append(h2, container);
+  return section;
 }
 
 
